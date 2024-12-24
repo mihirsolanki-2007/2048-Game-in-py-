@@ -1,256 +1,296 @@
-# logic.py to be
-# imported in the 2048.py file
+class Play_2048(Tk):
 
-# importing random package
-# for methods to generate random
-# numbers.
-import random
+game_board = []
+    new_random_tiles = [2, 2, 2, 2, 2, 2, 4]
+    score = 0
+    high_score = 0
+    game_score = 0
+    highest_score = 0
 
-
-# function to initialize game / grid
-# at the start
-def start_game():
-    # declaring an empty list then
-    # appending 4 list each with four
-    # elements as 0.
-    mat = []
-    for i in range(4):
-        mat.append([0] * 4)
-
-    # printing controls for user
-    print("Commands are as follows : ")
-    print("'W' or 'w' : Move Up")
-    print("'S' or 's' : Move Down")
-    print("'A' or 'a' : Move Left")
-    print("'D' or 'd' : Move Right")
-
-    # calling the function to add
-    # a new 2 in grid after every step
-    add_new_2(mat)
-    return mat
+ def __init__(self, *args, **kwargs):
+        Tk.__init__(self, *args, **kwargs)
+        # ==== create user interface
+        self.game_score = StringVar(self)
+        self.game_score.set("0")
+        self.highest_score = StringVar(self)
+        self.highest_score.set("0")
 
 
-# function to add a new 2 in
-# grid at any random empty cell
-def add_new_2(mat):
-    # choosing a random index for
-    # row and column.
-    r = random.randint(0, 3)
-    c = random.randint(0, 3)
+self.button_frame = Frame(self)
+        self.button_frame.grid(row=2, column=0, columnspan=4)
+        Button(self.button_frame, text="New Game", font=("times new roman", 15), command=self.new_game).grid(row=0, column=0)
+        self.button_frame.pack(side="top")
 
-    # while loop will break as the
-    # random cell chosen will be empty
-    # (or contains zero)
-    while (mat[r][c] != 0):
-        r = random.randint(0, 3)
-        c = random.randint(0, 3)
+        Label(self.button_frame, text="Score:", font=("times new roman", 15)).grid(row=0, column=1)
+        Label(self.button_frame, textvariable=self.game_score, font=("times new roman", 15)).grid(row=0, column=2)
+        Label(self.button_frame, text="Record:", font=("times new roman", 15)).grid(row=0, column=3)
+        Label(self.button_frame, textvariable=self.highest_score, font=("times new roman", 15)).grid(row=0, column=4)
 
-    # we will place a 2 at that empty
-    # random cell.
-    mat[r][c] = 2
+        self.canvas = Canvas(self, width=410, height=410, borderwidth=5, highlightthickness=0)
+        self.canvas.pack(side="top", fill="both", expand="false")
 
 
-# function to get the current
-# state of game
-def get_current_state(mat):
-    # if any cell contains
-    # 2048 we have won
-    for i in range(4):
-        for j in range(4):
-            if (mat[i][j] == 2048):
-                return 'WON'
+self.new_game()
 
-    # if we are still left with
-    # atleast one empty cell
-    # game is not yet over
-    for i in range(4):
-        for j in range(4):
-            if (mat[i][j] == 0):
-                return 'GAME NOT OVER'
+ def new_tiles(self):
+        index = random.randint(0, 6)
+        x = -1
+        y = -1
 
-    # or if no cell is empty now
-    # but if after any move left, right,
-    # up or down, if any two cells
-    # gets merged and create an empty
-    # cell then also game is not yet over
-    for i in range(3):
-        for j in range(3):
-            if (mat[i][j] == mat[i + 1][j] or mat[i][j] == mat[i][j + 1]):
-                return 'GAME NOT OVER'
+        # ==== check while game is not over
+        while self.full() == False:
+            x = random.randint(0, 3)
+            y = random.randint(0, 3)
 
-    for j in range(3):
-        if (mat[3][j] == mat[3][j + 1]):
-            return 'GAME NOT OVER'
+            if (self.game_board[x][y] == 0):
+                self.game_board[x][y] = self.new_random_tiles[index]
+                x1 = y * 105
+                y1 = x * 105
+                x2 = x1 + 105 - 5
+                y2 = y1 + 105 - 5
+                num = self.game_board[x][y]
+                if num == 2:
+                    self.square[x, y] = self.canvas.create_rectangle(x1, y1, x2, y2, fill="#e0f2f8", tags="rect",
+                                                                     outline="", width=0)
+                    self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, font=("Arial", 36), fill="#f78a8a", text="2")
+                elif num == 4:
+                    self.square[x, y] = self.canvas.create_rectangle(x1, y1, x2, y2, fill="#b8dbe5", tags="rect",
+                                                                     outline="", width=0)
+                    self.canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, font=("Arial", 36), fill="#f78a8a", text="4")
 
-    for i in range(3):
-        if (mat[i][3] == mat[i + 1][3]):
-            return 'GAME NOT OVER'
+                break
 
-    # else we have lost the game
-    return 'LOST'
+    # ==== check board is full or not
+    def full(self):
+        for i in range(0, 4):
+            for j in range(0, 4):
+                if (self.game_board[i][j] == 0):
+                    return False
+        return True
 
+    # ==== showing game board
+    def show_board(self):
+        cellwidth = 105
+        cellheight = 105
+        self.square = {}
 
-# all the functions defined below
-# are for left swap initially.
+        for column in range(4):
+            for row in range(4):
+                x1 = column * cellwidth
+                y1 = row * cellheight
+                x2 = x1 + cellwidth - 5
+                y2 = y1 + cellheight - 5
+                num = self.game_board[row][column]
+                if num == 0:
+                    self.show_number0(row, column, x1, y1, x2, y2)
+                else:
+                    self.show_number(row, column, x1, y1, x2, y2, num)
 
-# function to compress the grid
-# after every step before and
-# after merging cells.
-def compress(mat):
-    # bool variable to determine
-    # any change happened or not
-    changed = False
+    # ==== show board block when it is empty
+    def show_number0(self, row, column, a, b, c, d):
+        self.square[row, column] = self.canvas.create_rectangle(a, b, c, d, fill="#f5f5f5", tags="rect", outline="")
 
-    # empty grid
-    new_mat = []
+    # ==== show board number
+    def show_number(self, row, column, a, b, c, d, num):
+        bg_color = {'2': '#eee4da', '4': '#ede0c8', '8': '#edc850', '16': '#edc53f', '32': '#f67c5f', '64': '#f65e3b', '128': '#edcf72', '256': '#edcc61', '512': '#f2b179', '1024': '#f59563', '2048': '#edc22e',}
+        color = {'2': '#776e65', '4': '#f9f6f2', '8': '#f9f6f2', '16': '#f9f6f2', '32': '#f9f6f2', '64': '#f9f6f2', '128': '#f9f6f2', '256': '#f9f6f2', '512': '#776e65', '1024': '#f9f6f2', '2048': '#f9f6f2', }
+        self.square[row, column] = self.canvas.create_rectangle(a, b, c, d, fill=bg_color[str(num)], tags="rect", outline="")
+        self.canvas.create_text((a + c) / 2, (b + d) / 2, font=("Arial", 36), fill=color[str(num)], text=str(num))
 
-    # with all cells empty
-    for i in range(4):
-        new_mat.append([0] * 4)
+    # ==== moves by user
+    def moves(self, event):
 
-    # here we will shift entries
-    # of each cell to it's extreme
-    # left row by row
-    # loop to traverse rows
-    for i in range(4):
-        pos = 0
+        if event.keysym == 'Down':
+            for j in range(0, 4):
+                shift = 0
+                for i in range(3, -1, -1):
+                    if self.game_board[i][j] == 0:
+                        shift += 1
+                    else:
+                        if i - 1 >= 0 and self.game_board[i - 1][j] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i - 1][j] = 0
+                        elif i - 2 >= 0 and self.game_board[i - 1][j] == 0 and self.game_board[i - 2][j] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i - 2][j] = 0
+                        elif i == 3 and self.game_board[2][j] + self.game_board[1][j] == 0 and self.game_board[0][j] == self.game_board[3][
+                            j]:
+                            self.game_board[3][j] *= 2
+                            self.score += self.game_board[3][j]
+                            self.game_board[0][j] = 0
+                        if shift > 0:
+                            self.game_board[i + shift][j] = self.game_board[i][j]
+                            self.game_board[i][j] = 0
+            self.show_board()
+            self.new_tiles()
+            self.game_over()
+        elif event.keysym == 'Right':
+            for i in range(0, 4):
+                shift = 0
+                for j in range(3, -1, -1):
+                    if self.game_board[i][j] == 0:
+                        shift += 1
+                    else:
+                        if j - 1 >= 0 and self.game_board[i][j - 1] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i][j - 1] = 0
+                        elif j - 2 >= 0 and self.game_board[i][j - 1] == 0 and self.game_board[i][j - 2] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i][j - 2] = 0
+                        elif j == 3 and self.game_board[i][2] + self.game_board[i][1] == 0 and self.game_board[0][j] == self.game_board[3][
+                            j]:
+                            self.game_board[i][3] *= 2
+                            self.score += self.game_board[i][3]
+                            self.game_board[i][0] = 0
+                        if shift > 0:
+                            self.game_board[i][j + shift] = self.game_board[i][j]
+                            self.game_board[i][j] = 0
+            self.show_board()
+            self.new_tiles()
+            self.game_over()
+        elif event.keysym == 'Left':
+            for i in range(0, 4):
+                shift = 0
+                for j in range(0, 4):
+                    if self.game_board[i][j] == 0:
+                        shift += 1
+                    else:
+                        if j + 1 < 4 and self.game_board[i][j + 1] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i][j + 1] = 0
+                        elif j + 2 < 4 and self.game_board[i][j + 1] == 0 and self.game_board[i][j + 2] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i][j + 2] = 0
+                        elif j == 0 and self.game_board[i][1] + self.game_board[i][2] == 0 and self.game_board[i][3] == self.game_board[i][
+                            0]:
+                            self.game_board[i][0] *= 2
+                            self.score += self.game_board[i][0]
+                            self.game_board[i][3] = 0
+                        if shift > 0:
+                            self.game_board[i][j - shift] = self.game_board[i][j]
+                            self.game_board[i][j] = 0
+            self.show_board()
+            self.new_tiles()
+            self.game_over()
+        elif event.keysym == 'Up':
+            for j in range(0, 4):
+                shift = 0
+                for i in range(0, 4):
+                    if self.game_board[i][j] == 0:
+                        shift += 1
+                    else:
+                        if i + 1 < 4 and self.game_board[i + 1][j] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i + 1][j] = 0
+                        elif i + 2 < 4 and self.game_board[i + 1][j] == 0 and self.game_board[i + 2][j] == self.game_board[i][j]:
+                            self.game_board[i][j] *= 2
+                            self.score += self.game_board[i][j]
+                            self.game_board[i + 2][j] = 0
+                        elif i == 0 and self.game_board[1][j] + self.game_board[2][j] == 0 and self.game_board[3][j] == self.game_board[0][
+                            j]:
+                            self.game_board[0][j] *= 2
+                            self.score += self.game_board[0][j]
+                            self.game_board[3][j] = 0
+                        if shift > 0:
+                            self.game_board[i - shift][j] = self.game_board[i][j]
+                            self.game_board[i][j] = 0
+            self.show_board()
+            self.new_tiles()
+            self.game_over()
 
-        # loop to traverse each column
-        # in respective row
-        for j in range(4):
-            if (mat[i][j] != 0):
+        self.game_score.set(str(self.score))
+        if self.score > self.high_score:
+            self.high_score = self.score
+            self.highest_score.set(str(self.high_score))
 
-                # if cell is non empty then
-                # we will shift it's number to
-                # previous empty cell in that row
-                # denoted by pos variable
-                new_mat[i][pos] = mat[i][j]
+    # ==== to create new game
+    def new_game(self):
+        self.score = 0
+        self.game_score.set("0")
+        self.game_board = []
+        self.game_board.append([0, 0, 0, 0])
+        self.game_board.append([0, 0, 0, 0])
+        self.game_board.append([0, 0, 0, 0])
+        self.game_board.append([0, 0, 0, 0])
+        while True:
+            x = random.randint(0, 3)
+            y = random.randint(0, 3)
+            if (self.game_board[x][y] == 0):
+                self.game_board[x][y] = 2
+                break
 
-                if (j != pos):
-                    changed = True
-                pos += 1
+        index = random.randint(0, 6)
+        while self.full() == False:
+            x = random.randint(0, 3)
+            y = random.randint(0, 3)
+            if (self.game_board[x][y] == 0):
+                self.game_board[x][y] = self.new_random_tiles[index]
+                break
+        self.show_board()
 
-    # returning new compressed matrix
-    # and the flag variable.
-    return new_mat, changed
+    # ==== check for game over
+    def game_over(self):
+        for i in range(0, 4):
+            for j in range(0, 4):
+                if (self.game_board[i][j] == 2048):
+                    self.game_won()
+        for i in range(0, 4):
+            for j in range(0, 4):
+                if (self.game_board[i][j] == 0):
+                    return False
+        for i in range(0, 4):
+            for j in range(0, 3):
+                if (self.game_board[i][j] == self.game_board[i][j + 1]):
+                    return False
+        for j in range(0, 4):
+            for i in range(0, 3):
+                if self.game_board[i][j] == self.game_board[i + 1][j]:
+                    return False
+        gameover = [["G", "A", "M", "E", ], ["", "", "", ""], ["O", "V", "E", "R"], ["", "", "", ""]]
+        cellwidth = 105
+        cellheight = 105
+        self.square = {}
 
+        for column in range(4):
+            for row in range(4):
+                a = column * cellwidth
+                b = row * cellheight
+                c = a + cellwidth - 5
+                d = b + cellheight - 5
+                self.square[row, column] = self.canvas.create_rectangle(a, b, c, d, fill="#ede0c8", tags="rect",
+                                                                        outline="")
+                self.canvas.create_text((a + c) / 2, (b + d) / 2, font=("Arial", 36), fill="#494949",
+                                        text=gameover[row][column])
+        return True
 
-# function to merge the cells
-# in matrix after compressing
-def merge(mat):
-    changed = False
+    # ==== check for game won
+    def game_won(self):
+        gameover = [["Y", "O", "U", "", ], ["", "", "", ""], ["W", "O", "N", "!"], ["", "", "", ""]]
+        cellwidth = 105
+        cellheight = 105
+        self.square = {}
+        for column in range(4):
+            for row in range(4):
+                a = column * cellwidth
+                b = row * cellheight
+                c = a + cellwidth - 5
+                d = b + cellheight - 5
+                self.square[row, column] = self.canvas.create_rectangle(a, b, c, d, fill="#ede0c8", tags="rect",
+                                                                        outline="")
+                self.canvas.create_text((a + c) / 2, (b + d) / 2, font=("Arial", 36), fill="#494949",
+                                        text=gameover[row][column])
 
-    for i in range(4):
-        for j in range(3):
-
-            # if current cell has same value as
-            # next cell in the row and they
-            # are non empty then
-            if (mat[i][j] == mat[i][j + 1] and mat[i][j] != 0):
-                # double current cell value and
-                # empty the next cell
-                mat[i][j] = mat[i][j] * 2
-                mat[i][j + 1] = 0
-
-                # make bool variable True indicating
-                # the new grid after merging is
-                # different.
-                changed = True
-
-    return mat, changed
-
-
-# function to reverse the matrix
-# means reversing the content of
-# each row (reversing the sequence)
-def reverse(mat):
-    new_mat = []
-    for i in range(4):
-        new_mat.append([])
-        for j in range(4):
-            new_mat[i].append(mat[i][3 - j])
-    return new_mat
-
-
-# function to get the transpose
-# of matrix means interchanging
-# rows and column
-def transpose(mat):
-    new_mat = []
-    for i in range(4):
-        new_mat.append([])
-        for j in range(4):
-            new_mat[i].append(mat[j][i])
-    return new_mat
-
-
-# function to update the matrix
-# if we move / swipe left
-def move_left(grid):
-    # first compress the grid
-    new_grid, changed1 = compress(grid)
-
-    # then merge the cells.
-    new_grid, changed2 = merge(new_grid)
-
-    changed = changed1 or changed2
-
-    # again compress after merging.
-    new_grid, temp = compress(new_grid)
-
-    # return new matrix and bool changed
-    # telling whether the grid is same
-    # or different
-    return new_grid, changed
-
-
-# function to update the matrix
-# if we move / swipe right
-def move_right(grid):
-    # to move right we just reverse
-    # the matrix
-    new_grid = reverse(grid)
-
-    # then move left
-    new_grid, changed = move_left(new_grid)
-
-    # then again reverse matrix will
-    # give us desired result
-    new_grid = reverse(new_grid)
-    return new_grid, changed
-
-
-# function to update the matrix
-# if we move / swipe up
-def move_up(grid):
-    # to move up we just take
-    # transpose of matrix
-    new_grid = transpose(grid)
-
-    # then move left (calling all
-    # included functions) then
-    new_grid, changed = move_left(new_grid)
-
-    # again take transpose will give
-    # desired results
-    new_grid = transpose(new_grid)
-    return new_grid, changed
-
-
-# function to update the matrix
-# if we move / swipe down
-def move_down(grid):
-    # to move down we take transpose
-    new_grid = transpose(grid)
-
-    # move right and then again
-    new_grid, changed = move_right(new_grid)
-
-    # take transpose will give desired
-    # results.
-    new_grid = transpose(new_grid)
-    return new_grid, changed
-
-# this file only contains all the logic
-# functions to be called in main function
-# present in the other file
+if __name__ == "__main__":
+    # ==== preparing main window
+    app = Play_2048()
+    app.bind_all('<Key>', app.moves)
+    app.wm_title("2048 by PythonGeeks")
+    app.minsize(430, 470)
+    app.mainloop()
